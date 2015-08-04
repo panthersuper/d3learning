@@ -26,7 +26,9 @@ var x = d3.scale.linear()
 var chart = d3.select(".chart")
     .attr("width", width);
 
-d3.tsv("https://www.dropbox.com/s/a67if6jh9bwwxo7/data.tsv", type, function(error, data) {
+d3.tsv("https://github.com/panthersuper/d3learning/blob/master/bar/data.tsv", type, function(error, data) {
+   console.log("testing8888888888888");
+    console.log(data.length);
   x.domain([0, d3.max(data, function(d) { return d.value; })]);
 
   chart.attr("height", barHeight * data.length);
