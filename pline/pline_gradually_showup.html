@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)file:///D:/arch%20file/SCL/d3/start.html -->
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <style>
+    #canvas {
+    background-color:#f1edf2;
+    margin-left: 50px;
+    width : 500px;
+    height : 500px;
+        }
+    
+    
+    </style>
+
+</head>
+   <body>
+     <p>Hello!</p>
+     <div id = "canvas"></div>
+<script>
+
+ //The data for our line
+ var width = 500,
+     height = 500;
+ 
+ var x = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, height]);
+ 
+ var lineData = [ { "x": 0,   "y": 0},
+                  { "x": 20,  "y": 20},
+                  { "x": 70,  "y": 60}, 
+                  { "x": 100,  "y": 90},
+                  { "x": 200,  "y": 300},  
+                  { "x": 500, "y": 450}];
+ 
+ 
+ //This is the accessor function we talked about above
+ var lineFunction = d3.svg.line()
+                          .x(function(d) { return d.x; })
+                          .y(function(d) { return d.y; })
+                          .interpolate("linear");
+
+  
+  
+  
+//The SVG Container
+var svgContainer = d3.select("#canvas").append("svg")
+                                    .attr("width", width)
+                                    .attr("height", height)
+
+//The line SVG Path we draw
+var lineGraph = svgContainer.append("path")
+                            .attr("d", lineFunction(lineData[0]))//draw the first step
+                            .attr("stroke", d3.rgb(0,0,0))
+                            .attr("opacity", 0.5)
+                            .attr("stroke-width", 5)
+                            .attr("fill", "none");                     
+
+//the moving circle pointer                            
+var circle = svgContainer.append("circle")
+    .attr("r", 4.5)
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("fill","red");
+
+//do the gradually showup transition
+lineGraph.transition()
+         .delay(0)
+         .duration(10000)
+         .attrTween("d", getSmoothInterpolation(lineData));//need a reference to the function
+
+ !function loop() {
+
+    circle.transition()
+      .ease("elastic")
+      .duration(2000)
+      .attrTween("transform", translateAlong(lineGraph.node()))
+      .each("end", loop);
+}(); 
+
+
+
+// Returns an attrTween for translating along the specified path element.
+
+  function translateAlong(path) {
+    var l = path.getTotalLength();
+
+    return function(i) {
+      return function(t) {
+        var p = path.getPointAtLength(t * l);
+        return "translate(" + p.x + "," + p.y + ")";//Move marker
+      }
+    }
+  }
+
+function getInterpolation() {
+  
+  var interpolate = d3.scale.quantile()
+      .domain([0,1])
+      .range(d3.range(1, lineData.length + 1));
+  return function(t) {
+      console.log(t);
+      var interpolatedLine = lineData.slice(0, interpolate(t));
+      
+      return lineFunction(interpolatedLine);
+      }
+}
+
+function getSmoothInterpolation(data) {
+    return function(){//return a reference to this function
+  var interpolate = d3.scale.linear()
+      .domain([0, 1])
+      .range([1, data.length + 1]);
+
+  return function(t) {
+      var flooredX = Math.floor(interpolate(t));
+      var interpolatedLine = data.slice(0, flooredX);//previous segments
+          
+      if(flooredX > 0 && flooredX < data.length) {//iteration is not done
+          var weight = interpolate(t) - flooredX;//calculate the weight on this segment
+          var myY = data[flooredX].y * weight + data[flooredX-1].y * (1-weight);
+          var myX = data[flooredX].x * weight + data[flooredX-1].x * (1-weight);
+          
+          interpolatedLine.push( {"x":myX, "y":myY} );//add the current segment
+          }
+  
+      return lineFunction(interpolatedLine);
+      }
+    }
+  }
+
+
+
+
+</script>
+</body></html>

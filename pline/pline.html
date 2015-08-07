@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)file:///D:/arch%20file/SCL/d3/start.html -->
+<html>
+<head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <style>
+    #canvas {
+    background-color:#bce4f1;
+    margin-left: 50px;
+    width : 500px;
+    height : 500px;
+    
+        
+        }
+    
+    </style>
+
+</head>
+   <body>
+     <p>Hello!</p>
+     <div id = "canvas"></div>
+     
+<script>
+
+ //The data for our line
+ var width = 500,
+     height = 500;
+ 
+ var x = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, height]);
+ 
+ var lineData = [ { "x": 0,   "y": 0},  
+                  { "x": 20,  "y": 20},
+                  { "x": 70,  "y": 60}, 
+                  { "x": 100,  "y": 90},
+                  { "x": 200,  "y": 300},  
+                  { "x": 500, "y": 450}];
+ 
+ //This is the accessor function we talked about above
+ var lineFunction = d3.svg.line()
+                          .x(function(d) { return d.x; })
+                          .y(function(d) { return d.y; })
+                          .interpolate("linear");
+
+  
+  
+  
+//The SVG Container
+var svgContainer = d3.select("#canvas").append("svg")
+                                    .attr("width", width)
+                                    .attr("height", height)
+
+//The line SVG Path we draw
+var lineGraph = svgContainer.append("path")
+                            .attr("d", lineFunction(lineData))
+                            .attr("stroke", "blue")
+                            .attr("stroke-width", 2)
+                            .attr("fill", "none");
+
+                            
+var circle = svgContainer.append("circle")
+    .attr("r", 4.5)
+    .attr("cx", 0)
+    .attr("cy", 0);
+
+svgContainer.append("nodes");            
+nodes = svgContainer.selectAll("nodes")
+                    .data(lineData)
+                    .enter().append("circle")
+                    .attr("r",4)
+                    .attr("cx",function(d){return d.x})
+                    .attr("cy",function(d){return d.y});
+
+    
+!function loop() {
+
+
+
+  circle.transition()
+      .ease("linear")
+      .duration(5000)
+      .attrTween("transform", translateAlong(lineGraph.node()))
+      .each("end", loop);
+}();
+
+// Returns an attrTween for translating along the specified path element.
+
+  function translateAlong(path) {
+    var l = path.getTotalLength();
+    console.log(l);
+
+    return function(i) {
+      return function(t) {
+        var p = path.getPointAtLength(t * l);
+        return "translate(" + p.x + "," + p.y + ")";//Move marker
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+</script>
+</body></html>
