@@ -29,12 +29,13 @@ var chart = d3.select(".chart")
 
 d3.csv("https://raw.githubusercontent.com/panthersuper/d3learning/master/readingCSV/data2.csv", type, function(error, data) {
   y.domain([0, d3.max(data, function(d) { return d.value; })]);
-
+  
+  console.log(data[0]);
   var barWidth = width / data.length;
 
   var bar = chart.selectAll("g")
       .data(data)
-    .enter().append("g")
+      .enter().append("g")
       .attr("transform", function(d, i) { return "translate(" + i * barWidth + ",0)"; });
 
   bar.append("rect")
