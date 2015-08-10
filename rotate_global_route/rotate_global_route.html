@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  background: #fcfcfa;
+}
+
+.points circle {
+  fill: #fff;
+  stroke: #870d0d;
+  stroke-width: 2px;
+}
+
+.points text {
+  font: 11px sans-serif;
+  text-anchor: middle;
+  text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+}
+
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    rect { fill: transparent; }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+
+    }
+    .route {
+  fill: none;
+  stroke: #4eadd0;
+  stroke-width: 3px;
+}
+
+</style>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script>
+
+var width = 960,
+    height = 960,
+    speed = -1e-2,
+    start = Date.now();
+
+var places = {
+  HNL: [-157 - 55 / 60 - 21 / 3600, 21 + 19 / 60 + 07 / 3600],
+  HKG: [113 + 54 / 60 + 53 / 3600, 22 + 18 / 60 + 32 / 3600],
+  SVO: [37 + 24 / 60 + 53 / 3600, 55 + 58 / 60 + 22 / 3600],
+  HAV: [-82 - 24 / 60 - 33 / 3600, 22 + 59 / 60 + 21 / 3600],
+  CCS: [-66 - 59 / 60 - 26 / 3600, 10 + 36 / 60 + 11 / 3600],
+  UIO: [-78 - 21 / 60 - 31 / 3600, 0 + 06 / 60 + 48 / 3600]
+};
+
+var route = {
+  type: "LineString",
+  coordinates: [
+    places.HNL,
+    places.HKG,
+    places.SVO,
+    places.HAV,
+    places.CCS,
+    places.UIO
+  ]
+};
+
+var sphere = {type: "Sphere"};
+
+var projection = d3.geo.orthographic()
+    .scale(width / 2.1)
+    .translate([width / 2, height / 2])
+    .precision(.5);
+
+
+var graticule = d3.geo.graticule();
+
+var canvas = d3.select("body").append("canvas")
+    .attr("width", width)
+    .attr("height", height);
+var context = canvas.node().getContext("2d");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+
+svg.append('rect')
+  .attr('class', 'overlay')
+  .attr('width', width)
+  .attr('height', height);
+
+var target = d3.select("svg").append("circle")
+        .attr("cx", 25)
+        .attr("cy", 25)
+        .attr("r", 10)
+        .style("fill", "purple");
+
+
+var path = d3.geo.path()
+    .projection(projection)
+    .context(context);
+
+var patho = d3.geo.path()
+    .projection(projection);
+
+
+var myroute = svg.append("path")
+  .datum(route)
+  .attr("class", "route")
+  .attr("d", patho);
+
+
+
+
+var point = svg.append("g")
+  .attr("class", "points")
+  .selectAll("g")
+  .data(d3.entries(places))
+  .enter().append("g")
+  .attr("transform", function(d) {
+    return "translate(" + projection(d.value) + ")";
+  });
+
+  point.append("circle")
+  .attr("r", 4.5);
+
+point.append("text")
+  .attr("y", 10)
+  .attr("dy", ".71em")
+  .text(function(d) {
+    return d.key;
+  });
+
+
+
+d3.json("http://bl.ocks.org/mbostock/raw/4090846/world-110m.json", function(error, topo) {
+  if (error) throw error;
+
+  var land = topojson.feature(topo, topo.objects.land),
+      grid = graticule();
+
+
+var startN = null;//the starting point of the path
+for (k in places){
+    startN = places[k];
+    break;
+}
+var endN = null;
+for (k in places){
+    endN = places[k];
+}
+
+var getNode = function(placeList,i){//get the certain node from the place list
+    var item = 0;
+    var node = null
+    for (k in places){
+
+        if (item === i){
+            node = places[k];
+            break;
+}
+    item ++;
+
+}
+    return node;
+}
+
+var nodeNum = route.coordinates.length
+var nowNum = 0;
+
+console.log(nodeNum);
+
+
+
+
+var oneMove = 40;
+
+var timeLast = 0;
+var count = 0;
+
+  d3.timer(function() {
+    count ++;
+    context.clearRect(0, 0, width, height);
+
+    //change the projection based on rotate value
+
+
+    var timephase = count%oneMove;
+    if (timephase===0){
+
+    
+
+    nowNum  = nowNum+1;
+    nowNum = nowNum%nodeNum;
+}
+
+
+    console.log(nowNum);
+
+    var lat = getNode(places,nowNum)[0];
+    var lng = getNode(places,nowNum)[1];
+
+    target.transition()
+        .attr("cx", lat)
+        .attr("cy", lng);
+    
+
+
+    //projection.rotate([speed * (Date.now() - start), -15]).clipAngle(90);
+    projection.rotate([-target.attr("cx"), -target.attr("cy")]).clipAngle(90);
+
+
+    patho = d3.geo.path().projection(projection);//rotate the path
+    var myD = patho(route);
+    myroute
+  .attr("class", "route")
+  .attr("d", myD);
+
+    point.attr("transform", function(d) {//rotate the nodes
+    return "translate(" + projection(d.value) + ")";
+  });
+
+
+
+    
+
+    context.beginPath();//draw the outbound of the sphere
+    path(sphere);
+    context.lineWidth = 3;
+    context.strokeStyle = "#000";
+    context.stroke();
+    context.fillStyle = "#fff";
+    context.fill();
+
+    projection.clipAngle(180);//clip the grid and land, 180 means no clipping
+
+    context.beginPath();
+    path(land);
+    context.fillStyle = "#dadac4";
+    context.fill();
+
+    context.beginPath();
+    path(grid);
+    context.lineWidth = .5;
+    context.strokeStyle = "rgba(119,119,119,.5)";
+    context.stroke();
+
+    projection.clipAngle(90);//clip the back half of the land
+
+    context.beginPath();
+    path(land);
+    context.fillStyle = "#737368";
+    context.fill();
+    context.lineWidth = .5;
+    context.strokeStyle = "#000";
+    context.stroke();
+
+    projection.clipAngle(0);//clip the back half of the land
+
+  });
+});
+
+d3.select(self.frameElement).style("height", height + "px");
+
+</script>
