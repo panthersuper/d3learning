@@ -90,16 +90,21 @@ var route = getNode(route_multi, curPath);
 var target;
 var myroute;
 var CuRoute;
-var canvas = d3.select("body").append("canvas").attr("class", "mycanvas")
+var canvas = d3.select("#draw").append("canvas").attr("class", "mycanvas")
   .attr("width", width)
   .attr("height", height);
 
 var context = canvas.node().getContext("2d");
 
-var svg0 = d3.select("body").append("svg").attr("class", "mysvg")
+var svg0 = d3.select("#draw").append("svg").attr("class", "mysvg")
   .attr("width", width)
   .attr("height", height);
 var svg = svg0.append("g");
+
+
+
+
+
 
 var path = d3.geo.path()
   .projection(projection)
@@ -370,11 +375,7 @@ var update = function(current) {
   CuRoute
     .attr("class", "curroute")
 
-
   $(".points").remove();
-
-
-
   point = svg.append("g")
     .attr("class", "points")
     .selectAll("g")

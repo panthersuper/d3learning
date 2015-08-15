@@ -18,14 +18,14 @@ body {
   text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
 }
 
-    svg {
+    .mysvg {
       position: absolute;
       top: 0;
       left: 0;
     }
     rect { fill: transparent; }
 
-    canvas {
+    .mycanvas {
       position: absolute;
       top: 0;
       left: 0;
@@ -65,33 +65,51 @@ body {
         color: red;
     }
 
+    #draw {
+        display: block;
+        background: none;
+        width: 960px;
+        height:960px;
+        left:0px;
+        top:0px;
+        position: absolute;
+    }
+
+    svg{
+        float:left;
+    }
+
+
+
+
 </style>
 <body>
 <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src ="multiple_data.js"></script>
 
 <!-- /* <script src ="modified.js"></script>
 */ -->
 
-<tb class="paths">
-<thead>
-    <div id="tablepath">
+
+
+<div id="draw">
+
+</div>
+
+<div id="tablepath">
         <div ><p><strong>Paths</strong></p></div>
         <g class = "options">
         <div id = "p1"><p>1st path</p></div>
         <div id = "p2"><p>2nd path</p></div>
         </g>
-    </div>
+</div>
 
 
 
 
 
-</tb>
-
-
+<script src ="multiple_data.js"></script>
 
 </body>

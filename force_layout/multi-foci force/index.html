@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke-width: 1.5px;
+}
+
+</style>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script>
+
+var width = 400,
+    height = 500;
+
+var fill = d3.scale.category10();
+
+var nodes = d3.range(100).map(function(i) {//set the index key's value to index
+  return {index: i,
+          };
+});
+
+console.log(nodes);
+
+var force = d3.layout.force()
+    .nodes(nodes)
+    .size([width, height])
+    .on("tick", tick_null)//the loop starts with the tick function, will stop while alpha drop down
+    .gravity(0.5)//control the attraction between every 2 nodes
+    .start();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var node = svg.selectAll(".node")
+    .data(nodes)
+  .enter().append("circle")
+    .attr("class", "node")
+    .attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; })
+    .attr("r", 5)
+    .style("fill", function(d, i) { return fill(i & 3); })
+    .style("stroke", function(d, i) { return d3.rgb(fill(i & 3)).darker(2); })
+    .call(force.drag)
+    .on("mousedown", function() { d3.event.stopPropagation(); });
+
+svg.style("opacity", 1e-6)
+  .transition()
+    .duration(1000)
+    .style("opacity", 1);
+
+d3.select("body")
+    .on("mousedown", mousedown);
+
+function tick_null(e){
+  //by default, will move to the center of the svg canvas, and keep distance at the same time
+  node.attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+}
+
+function tick(e) {//control the position of the circles according to data input
+
+  // Push different nodes in different directions for clustering.
+  var k = 6 * e.alpha;
+  nodes.forEach(function(o, i) {//o:object, i: index
+
+/*    o.y += (i % 2)===1 ? k : -k;
+    o.x += (i % 2)===1 ? k : -k;
+*/  });
+
+  node.attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+}
+
+function mousedown() {
+  nodes.forEach(function(o, i) {
+    o.x += (Math.random() - .5) * 400;
+    o.y += (Math.random() - .5) * 400;
+  });
+  force.resume();//will restart force, recharge alpha
+}
+
+</script>
